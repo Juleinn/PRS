@@ -6,8 +6,8 @@ COMMON=../common
 
 all: serveur1-Renotte_Claes
 
-serveur1-Renotte_Claes: main.o connect.o
-	$(CC) main.o -o $(BIN)/serveur1-Renotte_Claes $(CFLAGS)
+serveur1-Renotte_Claes: main.o connect.o files.o data_load.o
+	$(CC) $^ -o $(BIN)/serveur1-Renotte_Claes $(CFLAGS)
 
 %.o: %.c %.h
 	$(CC) -c $< -o $@ $(CFLAGS)
