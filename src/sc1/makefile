@@ -6,14 +6,14 @@ COMMON=../common
 
 all: serveur1-Renotte_Claes
 
-serveur1-Renotte_Claes: main.o
-	$(CC) main.o -o $(BIN)/serveur1-Renotte_Claes
+serveur1-Renotte_Claes: main.o connect.o
+	$(CC) main.o -o $(BIN)/serveur1-Renotte_Claes $(CFLAGS)
 
 %.o: %.c %.h
-	$(CC) -c $< -o $@
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 %.o: $(COMMON)/%.c $(COMMON)/%.h
-	$(CC) -c $< -o $@
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 #opens server on public port 2000
 run: serveur1-Renotte_Claes
