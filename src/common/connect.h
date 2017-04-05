@@ -9,6 +9,8 @@
 
 #include "net.h"
 
+#define CONNECT_BUFFER_SIZE 128 // 128 bytes for SYN - SYN-ACK - ACK
+
 int udp_accept(SOCKET sock, sockaddr_in *sin, socklen_t sin_size);
 
 #endif
