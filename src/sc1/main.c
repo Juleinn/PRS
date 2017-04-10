@@ -29,7 +29,14 @@ int main(int argc, char** argv)
 
   sockaddr_in csin;
   socklen_t csin_size = sizeof(csin);
-  SOCKET csock = udp_accept(sock, &sin, &sin_size, (sockaddr*)&csin, &csin_size);
+  SOCKET csock = udp_accept(sock, &sin, &sin_size, &csin, &csin_size);
+
+  NetworkData cdata;
+  cdata.private_addr = csin;
+  cdata.private_socket = csock;
+  cdata.len = csin_size;
+
+  handle_client_request((void*)&cdata);
 
   close(sock);
 }
