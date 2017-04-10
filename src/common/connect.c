@@ -1,6 +1,7 @@
 #include "connect.h"
 
-int udp_accept(SOCKET sock, sockaddr_in *sin, socklen_t * sin_size)
+int udp_accept(SOCKET sock, sockaddr_in *sin, socklen_t * sin_size,
+  sockaddr_in* client_addr, socklen_t * client_size)
 {
   printf("waiting for incomming connection\n");
   char connect_buffer[CONNECT_BUFFER_SIZE];
@@ -17,7 +18,57 @@ int udp_accept(SOCKET sock, sockaddr_in *sin, socklen_t * sin_size)
   {
     // received valid SYN signal
     // pick a new port and bind
+    printf("Received client \"SYN\"\n");
+    // send back SYN-ACK:PORT
+    // pick random port, bind and ack with port number
+    sockaddr_in csin;
+    SOCKET csock = socket(AF_INET, SOCK_DGRAM, 0);
 
+    if(csock < 0)
+    {
+      printf("Error creating socket for new client\n");
+      return -1;
+    }
+
+    free_bind(csock, &csin, sizeof(csin));
+
+    printf("Switching to free port %d\n", ntohs(csin.sin_port));
+    sprintf(connect_buffer, "SYN-ACK%04d", (int) ntohs(csin.sin_port));
+
+    // send SYN-ACK
+    len = sendto(sock, connect_buffer, strlen("SYN-ACK0000") + 1, 0, (sockaddr*) sin, *sin_size);
+
+    if(len < 0)
+    {
+      printf("Connection error at SYN-ACK\n");
+      return -1;
+    }
+
+    int len = recvfrom(sock, connect_buffer, CONNECT_BUFFER_SIZE, 0, (sockaddr*) sin, sin_size);
+
+    if(len < 0)
+    {
+      printf("Error receiving ACK from client\n");
+      return -1;
+    }
+
+    if(memcmp(connect_buffer, "ACK", strlen("ACK")) == 0)
+    {
+      // return newly created socket and corresponding address
+      // copy at the very last moment from csin to client_addr
+      *client_addr = csin;
+      *client_size = sizeof(csin);
+      return csock;
+    }
+    else
+    {
+        printf("Received corrupt \"ACK\" message. Discarding\n");
+    }
+
+    // wait for incomming ACK from client
+
+    // ack :
+    // sprintf(connect_buffer, "SYN-ACK%d")
   }
   else
   {

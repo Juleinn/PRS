@@ -27,7 +27,9 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  udp_accept(sock, &sin, &sin_size);
+  sockaddr_in csin;
+  socklen_t csin_size = sizeof(csin);
+  SOCKET csock = udp_accept(sock, &sin, &sin_size, (sockaddr*)&csin, &csin_size);
 
   close(sock);
 }
