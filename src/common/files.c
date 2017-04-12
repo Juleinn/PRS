@@ -5,7 +5,7 @@ void * handle_client_request(void * network_data)
   // retrieve data in an appropriate way
   NetworkData client_data = *((NetworkData*) network_data);
 
-  printf("Entering thread for port %d\n", ntohs(client_data.private_addr.sin_port));
+  printf("Entering handler for port %d\n", ntohs(client_data.private_addr.sin_port));
 
   char filename[PROTOCOL_BUFFER_SIZE];
 
@@ -21,7 +21,7 @@ void * handle_client_request(void * network_data)
 
   /* Create appropriate data buffers and mutices then call data_load and data_send in two separate threads */
   // TODO Here
-  
+
   return NULL;
 }
 
