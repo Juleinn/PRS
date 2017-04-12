@@ -15,7 +15,7 @@ void * data_load(void * data)
   while(1)
   {
     //Increase position of cursor in circular buffer
-    if(n==NB_CHUNKS) n=0;
+    if(n==NB_CHUNKS-1) n=0;
     else n++;
 
     //Lock mutex (writing in process...)
@@ -25,7 +25,7 @@ void * data_load(void * data)
     }
 
     //Read Data in filename and copy it in buffer
-    fread(&(dataUse->buffer[CHUNK_SIZE*0]), CHUNK_SIZE, 1, fp);
+    fread(&(dataUse->buffer[CHUNK_SIZE*n]), CHUNK_SIZE, 1, fp);
     printf("Hello from data_load\n");
 
     //Unlock mutex (allows data_send to use resource)

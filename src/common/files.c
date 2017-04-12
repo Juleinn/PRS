@@ -49,6 +49,7 @@ void * handle_client_request(void * network_data)
 
   // launch threads
   pthread_create(&loader_thread, NULL, data_load, (void*)&load_data);
+  sleep(1);
   pthread_create(&sender_thread, NULL, data_send, (void*)&send_data);
 
   // wait here for our sender thread to complete

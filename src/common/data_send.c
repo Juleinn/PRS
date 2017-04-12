@@ -12,7 +12,19 @@ void * data_send(void * data)
   char* data_buffer         = send_data.buffer;
   pthread_mutex_t * mutices = send_data.mutices;
 
-  // let's play 
+  int seq_id=0;
+  while(1)
+  {
+    pthread_mutex_lock(&(mutices[chunk_position(seq_id)]));
+    printf("locked : %d\n", chunk_position(seq_id));
+
+
+    sleep(1); // temporise
+
+    pthread_mutex_unlock(&(mutices[chunk_position(seq_id)]));
+    printf("unlocked : %d\n", chunk_position(seq_id));
+    seq_id++;
+  }
 
 
   /* Start of debugging and test section */
