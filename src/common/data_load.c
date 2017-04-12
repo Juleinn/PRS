@@ -2,6 +2,7 @@
 
 #include "data_load.h"
 
+<<<<<<< HEAD
 
 void * data_load(void * data)
 {
