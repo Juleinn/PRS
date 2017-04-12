@@ -2,8 +2,6 @@
 
 #include "data_load.h"
 
-<<<<<<< HEAD
-
 void * data_load(void * data)
 {
   //Init
@@ -17,7 +15,7 @@ void * data_load(void * data)
   {
 
     //Lock mutex (writing in process...)
-    fread(dataUse->buffer[0+CHUNK_SIZE*0], CHUNK_SIZE, 1, fp);
+    // fread(dataUse->buffer[0+CHUNK_SIZE*0], CHUNK_SIZE, 1, fp);
     //Unlock mutex (reading in process)
   }
 
