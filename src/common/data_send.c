@@ -12,21 +12,23 @@ void * data_send(void * data)
   char* data_buffer         = send_data.buffer;
   pthread_mutex_t * mutices = send_data.mutices;
 
+  // let's play 
+
 
   /* Start of debugging and test section */
   // debugging buffer
-  char debug_buffer[CHUNK_SIZE+6]="aaaaaaaaaaaaaaaahhhhhhhhhhhhhhhhaaaahahahahah";
-
-  int seqs;
-  for(seqs = 0; seqs < 500; seqs++)
-  {
-    sprintf(debug_buffer, "%06d", seqs);
-    // leave some random stuff in debug buffer
-    sendto(sock, debug_buffer, sizeof(debug_buffer), 0, (sockaddr*)&csin, csin_size);
-    // wait for ack
-    int len = recvfrom(sock, debug_buffer, sizeof(debug_buffer), 0, (sockaddr*)&csin, &csin_size);
-    printf("debug_buffer : %s \n", debug_buffer);
-  }
+  // char debug_buffer[CHUNK_SIZE+6]="aaaaaaaaaaaaaaaahhhhhhhhhhhhhhhhaaaahahahahah";
+  //
+  // int seqs;
+  // for(seqs = 0; seqs < 500; seqs++)
+  // {
+  //   sprintf(debug_buffer, "%06d", seqs);
+  //   // leave some random stuff in debug buffer
+  //   sendto(sock, debug_buffer, sizeof(debug_buffer), 0, (sockaddr*)&csin, csin_size);
+  //   // wait for ack
+  //   int len = recvfrom(sock, debug_buffer, sizeof(debug_buffer), 0, (sockaddr*)&csin, &csin_size);
+  //   printf("debug_buffer : %s \n", debug_buffer);
+  // }
 
   return NULL;
 }
