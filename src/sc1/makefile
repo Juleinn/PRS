@@ -1,4 +1,4 @@
-CFLAGS=-Wall $(INCLUDE) -lpthread
+CFLAGS=-Wall $(INCLUDE) -lpthread -Wno-unused-variable
 CC=gcc
 INCLUDE=-I./ -I../common
 BIN=../../bin
