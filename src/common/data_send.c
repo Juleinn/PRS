@@ -3,10 +3,30 @@
 void * data_send(void * data)
 {
   // retrieve the address, buffer of the data to sender
-  DataSend_Data send_data = *((DataSend_Data*) data);
+  DataSend_Data send_data   = *((DataSend_Data*) data);
+  sockaddr_in sin           = send_data.sin;
+  socklen_t sin_size        = send_data.sin_size;
+  sockaddr_in csin          = send_data.csin;
+  socklen_t csin_size       = send_data.csin_size;
+  SOCKET sock               = send_data.sock;
+  char* data_buffer         = send_data.buffer;
+  pthread_mutex_t * mutices = send_data.mutices;
 
 
+  /* Start of debugging and test section */
+  // debugging buffer
+  char debug_buffer[CHUNK_SIZE+6]="aaaaaaaaaaaaaaaahhhhhhhhhhhhhhhhaaaahahahahah";
 
-  printf("Hello from sender\n");
+  int seqs;
+  for(seqs = 0; seqs < 500; seqs++)
+  {
+    sprintf(debug_buffer, "%06d", seqs);
+    // leave some random stuff in debug buffer
+    sendto(sock, debug_buffer, sizeof(debug_buffer), 0, (sockaddr*)&csin, csin_size);
+    // wait for ack
+    int len = recvfrom(sock, debug_buffer, sizeof(debug_buffer), 0, (sockaddr*)&csin, &csin_size);
+    printf("debug_buffer : %s \n", debug_buffer);
+  }
+
   return NULL;
 }
