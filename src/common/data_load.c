@@ -32,7 +32,7 @@ void * data_load(void * data)
     if(pthread_mutex_unlock(&(dataUse->mutices[n]))!=0)
     {
       perror("pthread_mutex_unlock:");
-    };
+    }
   }
 
  return NULL;
