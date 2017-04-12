@@ -38,5 +38,10 @@ int main(int argc, char** argv)
 
   handle_client_request((void*)&cdata);
 
+  while(1)
+  {
+
+  }
+
   close(sock);
 }
