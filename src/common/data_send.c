@@ -16,13 +16,12 @@ void * data_send(void * data)
   while(1)
   {
     pthread_mutex_lock(&(mutices[chunk_position(seq_id)]));
-    printf("locked : %d\n", chunk_position(seq_id));
-
+    printf("sender : locked : %d\n", chunk_position(seq_id));
 
     sleep(1); // temporise
 
     pthread_mutex_unlock(&(mutices[chunk_position(seq_id)]));
-    printf("unlocked : %d\n", chunk_position(seq_id));
+    printf("sender : unlocked : %d\n", chunk_position(seq_id));
     seq_id++;
   }
 

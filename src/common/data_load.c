@@ -23,6 +23,7 @@ void * data_load(void * data)
     {
       perror("pthread_mutex_lock:");
     }
+    printf("loader : locked %d\n", n);
 
     //Read Data in filename and copy it in buffer
     fread(&(dataUse->buffer[CHUNK_SIZE*n]), CHUNK_SIZE, 1, fp);
@@ -33,6 +34,7 @@ void * data_load(void * data)
     {
       perror("pthread_mutex_unlock:");
     }
+    printf("loader : unlocked %d\n", n);
   }
 
  return NULL;
