@@ -29,6 +29,8 @@ typedef struct sockaddr sockaddr;
 #define NB_CHUNKS  10
 #define BUFFER_SIZE CHUNK_SIZE * NB_CHUNKS
 
+#define SEQ_HEADER_SIZE 6 // 6 bytes for the sequence if then the proper payload
+
 #define chunk_position(seq_id) (seq_id % NB_CHUNKS)
 
 #endif
