@@ -24,7 +24,8 @@ typedef struct NetworkData NetworkData;
 
 /* Handles one client on a socket with specified port. Connection data is packed into a network_data
 structure for later multithreading implementations */
-void * handle_client_request(void * network_data);
+void * handle_client_request2(SOCKET sock, sockaddr_in sin, socklen_t sin_size,
+  sockaddr_in csin, socklen_t csin_size);
 
 /*First client message should be filename, this functions will retrieve it */
 int get_filename(SOCKET sock, sockaddr_in * sin, socklen_t * sin_size, char * buffer);
@@ -62,10 +63,26 @@ long int get_filesize(FILE* f);
 
 void packet_loss(double * cwnd, Congestion_mode * mode, int * flightSize);
 
-int wait_ack(SOCKET sock, char * buffer, int size, sockaddr_in * csin, socklen_t * csin_size, int timeout);
-
 int get_ack_seqid(char* buffer);
 
 void updateRTT(int * RTT, int seq, SeqMeta * meta, int seqs);
+
+void send_seqs(SOCKET sock, sockaddr_in * sin, socklen_t sin_size);
+
+int wait_ack(SOCKET sock, sockaddr_in*sin, socklen_t* sin_size);
+
+void init();
+
+void timedout();
+
+void correct_ack();
+
+void duplicate_ack(SOCKET sock, sockaddr_in* sin, socklen_t* sin_size);
+
+void fast_retransmit(SOCKET sock, sockaddr_in* sin, socklen_t* sin_size);
+
+#define ACK_TIMEDOUT -1
+#define ACK_OK 0
+#define ACK_CORRUPT 1
 
 #endif

@@ -27,16 +27,15 @@ int main(int argc, char** argv)
     return EXIT_FAILURE;
   }
 
-  sockaddr_in csin;
-  socklen_t csin_size = sizeof(csin);
-  SOCKET csock = udp_accept(sock, &sin, &sin_size, &csin, &csin_size);
 
-  NetworkData cdata;
-  cdata.private_addr = csin;
-  cdata.private_socket = csock;
-  cdata.len = csin_size;
+    sockaddr_in csin;
+    socklen_t csin_size = sizeof(csin);
+    SOCKET csock = udp_accept(sock, &sin, &sin_size, &csin, &csin_size);
 
-  handle_client_request((void*)&cdata);
+
+    handle_client_request2(csock, sin, sin_size, csin, csin_size);
+    return 0;
+
 
   close(sock);
 }
