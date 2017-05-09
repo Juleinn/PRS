@@ -25,7 +25,7 @@ typedef struct sockaddr sockaddr;
 #include <sys/time.h>
 #include <arpa/inet.h>
 
-#define CHUNK_SIZE 1024
+#define CHUNK_SIZE 1494
 #define NB_CHUNKS  10
 #define BUFFER_SIZE CHUNK_SIZE * NB_CHUNKS
 

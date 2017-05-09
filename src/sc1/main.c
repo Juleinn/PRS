@@ -18,7 +18,7 @@ int main(int argc, char** argv)
   sockaddr_in sin;
   sin.sin_family = AF_INET;
   sin.sin_addr.s_addr = INADDR_ANY;
-  sin.sin_port = htons(2000);
+  sin.sin_port = htons(atoi(argv[1]));
   socklen_t sin_size = sizeof(sin);
 
   if(bind(sock, (sockaddr*)&sin, sin_size) < 0)
