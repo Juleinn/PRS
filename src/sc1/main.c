@@ -36,6 +36,6 @@ int main(int argc, char** argv)
     handle_client_request2(csock, sin, sin_size, csin, csin_size);
     return 0;
 
-
+  close(csock);
   close(sock);
 }
