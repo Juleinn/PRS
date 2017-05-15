@@ -25,7 +25,7 @@ long long int send_millis[TIME_BUFFER_SIZE];  // sending times of seqs for RTT e
 #ifdef CWND_FAC
   #define CWND_UPONLOSS_FACTOR CWND_FAC
 #else
-  #define CWND_UPONLOSS_FACTOR .5;
+  #define CWND_UPONLOSS_FACTOR .85;
 #endif
 
 #ifdef CUS_CHK

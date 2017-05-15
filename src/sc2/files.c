@@ -11,15 +11,65 @@ FILE* f;                    // the source file to read from
 int lastSeq;                // last sequence of the file
 int sstresh;                // rfc defined variable-> could use a mode instead
 int ack_id;                 // id of the current acked sequence
-int dupli_counter;
+int dupli_counter;          // counter for duplicate acks
+int timeout_counter;
+#define TIME_BUFFER_SIZE 1000000 // seq_ids are stored on 6 digits -> max 999999
+long long int send_millis[TIME_BUFFER_SIZE];  // sending times of seqs for RTT estimation
+
+// setupable factor for optimisation
+#ifdef CUSTOM_CWND
+  #define DEFAULT_CWND CUSTOM_CWND
+#else
+  #define DEFAULT_CWND 1
+#endif
+
+#ifdef CWND_FAC
+  #define CWND_UPONLOSS_FACTOR CWND_FAC
+#else
+  #define CWND_UPONLOSS_FACTOR .85;
+#endif
+
+#ifdef CUS_CHK
+  #undef CHUNK_SIZE
+  #define CHUNK_SIZE CUS_CHK
+#endif
+
+#define ALPHA 0.9
+#define BETA 1.1
+
+#ifdef CUS_ALPHA
+    #undef ALPHA
+    #define ALPHA CUS_ALPHA
+#endif
+
+#ifdef CUS_BETA
+  #undef BETA
+  #define BETA CUS_BETA
+#endif
+
+
+#define update_RTT(){\
+  RTT = (getMillis() - send_millis[lastSeqAcked]);\
+}
+
+/*  int est_RTT = (getMillis() - send_millis[lastSeqAcked]);\
+  RTT = ((float) est_RTT * ALPHA) + ((float) RTT * (1 - ALPHA));\
+}\*/
+
+#define RTO_OFFSET 9
+#define RTO ((int) (BETA * (float) RTT)) + RTO_OFFSET < 1 ? 1 : (int) (BETA * (float) RTT) + RTO_OFFSET
 
 void * handle_client_request2(SOCKET sock, sockaddr_in sin, socklen_t sin_size,
   sockaddr_in csin, socklen_t csin_size)
 {
+  printf("BETA = %lf\n", BETA);
   // retrieve filename from transmission
   get_filename(sock, &csin, &csin_size, buffer);
   // then load it
   f = fopen(buffer, "r");
+  // get filesize for statistical data measurement
+  long long int filesize = get_filesize(f);
+
   if(f == NULL)
   {
     // fprintf(stderr, "Unable to open file \"%s\"\n", buffer);
@@ -27,28 +77,35 @@ void * handle_client_request2(SOCKET sock, sockaddr_in sin, socklen_t sin_size,
   }
 
   init();
-  // set a constant timeout later --> TODO : measure timeout
-  udp_rcv_timeout(sock, 8); // 50 ms timeout
+
+  FILE * cwnd_f_t = fopen("cwnd_f_t.dat", "w");
+  FILE * rtt_f_t = fopen("rtt_f_t.dat", "w");
+
+  // get start time
+  long long int startMillis = getMillis();
+
+  RTT = 15;
+  udp_rcv_timeout(sock, 9);
 
   // now enter proper finite state automata
   while(lastSeqAcked != lastSeq)
   {
     // send data
+    int flightSizeCpy = flightSize;
     send_seqs(sock, &csin, csin_size);
-    print_cfg();
 
+    fprintf(cwnd_f_t, "%d;%d\n", (int)(getMillis() - startMillis), (int)cwnd);
+    fprintf(rtt_f_t, "%d %d\n", (int)(getMillis() - startMillis), RTT);
 
     // wait for any ack
     if(wait_ack(sock, &csin, &csin_size) == ACK_TIMEDOUT)
     {
       timedout();
-      printf("Timed out\n");
     }
     else // ACK_OK (assumed not corrupt)
     {
       if(ack_id > lastSeqAcked) // correct ack
       {
-
         correct_ack();
       }
       else if(ack_id == lastSeqAcked)  // duplicate_ack
@@ -58,28 +115,28 @@ void * handle_client_request2(SOCKET sock, sockaddr_in sin, socklen_t sin_size,
     }
   }
 
-  printf("End of transmission\n");
+  printf("\nEnd of transmission\n");
+  printf("filesize = %lld bytes : %.1fKB : %.1fMB\n", filesize, (float)filesize / 1000.0f, (float) filesize/(1000000.0f));
+  int timeMillis = (int) (getMillis() - startMillis);
+  printf("Time : %d ms : %.1fs\n", timeMillis, (float) timeMillis / 1000.0f);
+  printf("Rate : %.1fKB/s, %.2fMB/s\n", ((float)filesize)/(timeMillis), ((float)filesize/(1000))/((float)timeMillis));
+
   // end of transmission : send 'FIN'
   sprintf(buffer, "FIN");
   sendto(sock, buffer, 4, 0, (sockaddr*)&csin, csin_size);
+  sendto(sock, buffer, 4, 0, (sockaddr*)&csin, csin_size);
+  sendto(sock, buffer, 4, 0, (sockaddr*)&csin, csin_size);
+  sendto(sock, buffer, 4, 0, (sockaddr*)&csin, csin_size);
+
+  fclose(cwnd_f_t);
+  fclose(rtt_f_t);
+
 
   return NULL;
 }
 
-void print_cfg()
-{
-  #ifdef VERBOSE
-    printf("---------------------------\n");
-    printf("Seq. Id = %d\n", seq_id);
-    printf(" |lastSeqAcked = %d\n", lastSeqAcked);
-    printf(" |cwnd = %lf\n", cwnd);
-    printf(" |FlightSize = %d\n", flightSize);
-    printf(" |dupli_counter = %d\n\n", dupli_counter);
-  #endif
-}
-
 // sends given sequences
-void send_seqs(SOCKET sock, sockaddr_in * sin, socklen_t sin_size)
+inline void send_seqs(SOCKET sock, sockaddr_in * sin, socklen_t sin_size)
 {
   // send sequences so that lastSeqAcked + flightSize < lastSeq (stops at end of file)
   // and send the right amount of sequences : flightSize < cwnd
@@ -96,11 +153,14 @@ void send_seqs(SOCKET sock, sockaddr_in * sin, socklen_t sin_size)
     // send the sequence
     sendto(sock, buffer, SEQ_HEADER_SIZE + payload, 0, (sockaddr*)sin, sin_size);
     // printf("Sent seq %d \n", seq_id);
+
+    // update sending time accordingly
+    send_millis[seq_id] = getMillis();
   }
 }
 
 // waits for an acknowledgement and handles it
-int wait_ack(SOCKET sock, sockaddr_in*sin, socklen_t* sin_size)
+inline int wait_ack(SOCKET sock, sockaddr_in*sin, socklen_t* sin_size)
 {
   int len = recvfrom(sock, buffer, SEQ_HEADER_SIZE + CHUNK_SIZE, 0, (sockaddr*)sin, sin_size);
   if(len < 0) // timedout
@@ -123,7 +183,7 @@ int wait_ack(SOCKET sock, sockaddr_in*sin, socklen_t* sin_size)
   }
 }
 
-void correct_ack()
+inline void correct_ack()
 {
   // update values accordingly
   // update cwnd and flightSize (different if in S.S or C.A)
@@ -135,11 +195,12 @@ void correct_ack()
     cwnd += 1/cwnd;
   lastSeqAcked = ack_id;
 
-  printf("=> acked %d\n", lastSeqAcked);
+  update_RTT();
+
   // printf("Acked %d\n", lastSeqAcked);
 }
 
-void duplicate_ack(SOCKET sock, sockaddr_in* sin, socklen_t *sin_size)
+inline void duplicate_ack(SOCKET sock, sockaddr_in* sin, socklen_t *sin_size)
 {
   // printf("Received a duplicate ack\n");
   // handle fast retransmit and fast recovery
@@ -154,9 +215,9 @@ void duplicate_ack(SOCKET sock, sockaddr_in* sin, socklen_t *sin_size)
   }
 }
 
-void fast_retransmit(SOCKET sock, sockaddr_in* sin, socklen_t* sin_size)
+inline void fast_retransmit(SOCKET sock, sockaddr_in* sin, socklen_t* sin_size)
 {
-  printf("Fast retransmitting %d ...\n", ack_id);
+  // printf("Fast retransmitting %d\n", ack_id);
   // send the next sequence and wait for an ack. If it fails, time it out, otherwise continue with same cwnd
   // send single seq
   seq_id = ack_id + 1;
@@ -173,16 +234,17 @@ void fast_retransmit(SOCKET sock, sockaddr_in* sin, socklen_t* sin_size)
 }
 
 // handles timeout
-void timedout()
+inline void timedout()
 {
-  cwnd *= .9;
+  cwnd *= CWND_UPONLOSS_FACTOR;
+
   flightSize = 0;
   sstresh = (int) cwnd;
 
   // make sure not to get stuck with cwnd = 0 in case of multiple failures
   if((int) cwnd == 0)
   {
-    cwnd = 1;
+    cwnd = DEFAULT_CWND;
     sstresh = 1000000;// slow start again
   }
 }
@@ -190,13 +252,15 @@ void timedout()
 // initializes the automata for transmission
 void init()
 {
-  cwnd = 1;
+  cwnd = DEFAULT_CWND;
   lastSeqAcked = -1;// starting sequences at 0
   seq_id = 0;
   flightSize = 0; // currently no sequence sent
-  RTT = 300; // large RTT for first transmission as it will be measured later
+  RTT = 50; // large RTT for first transmission as it will be measured later
   sstresh = 1000000; // set it to a large value to leave slow start only upon packet loss
   dupli_counter = 0;
+
+  timeout_counter = 0;
 
   // compute last sequence
   int filesize = get_filesize(f);
@@ -205,14 +269,14 @@ void init()
 
 void packet_loss(double * cwnd, Congestion_mode * mode, int * flightSize)
 {
-  *cwnd *= .9;// /= 2 ;// slow start & C.A
+  *cwnd *= CWND_UPONLOSS_FACTOR;// /= 2 ;// slow start & C.A
   *mode = CONGESTION_AV; //nevermind we already might be
   *flightSize = 0; // we must assume we lost everything
 
   // just to reset to slow start in case packet loss happen in a row
   if((int) *cwnd == 0)
   {
-    *cwnd = 1;
+    *cwnd = DEFAULT_CWND;
     *mode = SLOWSTART;
   }
 }

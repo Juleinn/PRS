@@ -81,8 +81,6 @@ void duplicate_ack(SOCKET sock, sockaddr_in* sin, socklen_t* sin_size);
 
 void fast_retransmit(SOCKET sock, sockaddr_in* sin, socklen_t* sin_size);
 
-void print_cfg();
-
 #define ACK_TIMEDOUT -1
 #define ACK_OK 0
 #define ACK_CORRUPT 1
