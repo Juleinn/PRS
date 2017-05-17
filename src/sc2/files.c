@@ -94,8 +94,10 @@ void * handle_client_request2(SOCKET sock, sockaddr_in sin, socklen_t sin_size,
     int flightSizeCpy = flightSize;
     send_seqs(sock, &csin, csin_size);
 
-    fprintf(cwnd_f_t, "%d;%d\n", (int)(getMillis() - startMillis), (int)cwnd);
-    fprintf(rtt_f_t, "%d %d\n", (int)(getMillis() - startMillis), RTT);
+    // fprintf(cwnd_f_t, "%d;%d\n", (int)(getMillis() - startMillis), (int)cwnd);
+    // fprintf(rtt_f_t, "%d %d\n", (int)(getMillis() - startMillis), RTT);
+
+    udp_rcv_timeout(sock, RTT+3);
 
     // wait for any ack
     if(wait_ack(sock, &csin, &csin_size) == ACK_TIMEDOUT)
