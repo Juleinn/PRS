@@ -56,7 +56,7 @@ long long int send_millis[TIME_BUFFER_SIZE];  // sending times of seqs for RTT e
   RTT = ((float) est_RTT * ALPHA) + ((float) RTT * (1 - ALPHA));\
 }\*/
 
-#define RTO_OFFSET 9
+#define RTO_OFFSET 5
 #define RTO ((int) (BETA * (float) RTT)) + RTO_OFFSET < 1 ? 1 : (int) (BETA * (float) RTT) + RTO_OFFSET
 
 void * handle_client_request2(SOCKET sock, sockaddr_in sin, socklen_t sin_size,
@@ -67,6 +67,11 @@ void * handle_client_request2(SOCKET sock, sockaddr_in sin, socklen_t sin_size,
   get_filename(sock, &csin, &csin_size, buffer);
   // then load it
   f = fopen(buffer, "r");
+  if(f == NULL)
+  {
+    fprintf(stderr, "Unable to open file %s\n", buffer);
+    exit(EXIT_FAILURE);
+  }
   // get filesize for statistical data measurement
   long long int filesize = get_filesize(f);
 
@@ -78,8 +83,8 @@ void * handle_client_request2(SOCKET sock, sockaddr_in sin, socklen_t sin_size,
 
   init();
 
-  FILE * cwnd_f_t = fopen("cwnd_f_t.dat", "w");
-  FILE * rtt_f_t = fopen("rtt_f_t.dat", "w");
+  //FILE * cwnd_f_t = fopen("cwnd_f_t.dat", "w");
+  //FILE * rtt_f_t = fopen("rtt_f_t.dat", "w");
 
   // get start time
   long long int startMillis = getMillis();
@@ -130,8 +135,8 @@ void * handle_client_request2(SOCKET sock, sockaddr_in sin, socklen_t sin_size,
   sendto(sock, buffer, 4, 0, (sockaddr*)&csin, csin_size);
   sendto(sock, buffer, 4, 0, (sockaddr*)&csin, csin_size);
 
-  fclose(cwnd_f_t);
-  fclose(rtt_f_t);
+  //fclose(cwnd_f_t);
+  //fclose(rtt_f_t);
 
 
   return NULL;

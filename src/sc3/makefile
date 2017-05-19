@@ -5,10 +5,10 @@ BIN=../../bin
 COMMON=../common
 COMMON1_3=../common1_3
 
-all: serveur3-Renotte_Claes
+all: serveur3-SemiCroustillants
 
-serveur3-Renotte_Claes: main.o connect.o files.o
-	$(CC) $^ -o $(BIN)/serveur3-Renotte_Claes $(CFLAGS)
+serveur3-SemiCroustillants: main.o connect.o files.o
+	$(CC) $^ -o $(BIN)/serveur3-SemiCroustillants $(CFLAGS)
 
 %.o: %.c %.h
 	$(CC) -c $< -o $@ $(CFLAGS)
@@ -20,8 +20,8 @@ serveur3-Renotte_Claes: main.o connect.o files.o
 		$(CC) -c $< -o $@ $(CFLAGS)
 
 #opens server on public port 2000
-run: serveur1-Renotte_Claes
-	$(BIN)/serveur1-Renotte_Claes 2000
+run: serveur1-SemiCroustillants
+	$(BIN)/serveur1-SemiCroustillants 2000
 
 clean:
 	rm *.o

@@ -10,8 +10,6 @@
 #include <pthread.h>
 
 #include "net.h"
-#include "data_send.h"
-#include "data_load.h"
 
 /* Structure for packing client data into a void* for further transmission to handler
 (supports threading) */

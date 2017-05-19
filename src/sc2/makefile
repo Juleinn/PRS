@@ -4,10 +4,10 @@ INCLUDE=-I./ -I../common
 BIN=../../bin
 COMMON=../common
 
-all: serveur2-Renotte_Claes
+all: serveur2-SemiCroustillants
 
-serveur2-Renotte_Claes: main.o connect.o files.o
-	$(CC) $^ -o $(BIN)/serveur2-Renotte_Claes $(CFLAGS)
+serveur2-SemiCroustillants: main.o connect.o files.o
+	$(CC) $^ -o $(BIN)/serveur2-SemiCroustillants $(CFLAGS)
 
 %.o: %.c %.h
 	$(CC) -c $< -o $@ $(CFLAGS)
@@ -19,8 +19,8 @@ serveur2-Renotte_Claes: main.o connect.o files.o
 		$(CC) -c $< -o $@ $(CFLAGS)
 
 #opens server on public port 2000
-run: serveur2-Renotte_Claes
-	$(BIN)/serveur2-Renotte_Claes 2000
+run: serveur2-SemiCroustillants
+	$(BIN)/serveur2-SemiCroustillants 2000
 
 clean:
 	rm *.o
